@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fleeting Notes</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#4C7385">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Notes">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&display=swap">
+<style>
+:root{--bg:#F6F6F1;--panel:#FBFBF8;--ink:#1A1B1C;--mute:#6C706F;--line:#E3E3DC;--accent:#4C7385;--accent-ink:#fff;--err:#A63D2F;
+--font:'Instrument Sans',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#16181A;--panel:#1D2022;--ink:#ECECE8;--mute:#9A9F9E;--line:#2D3134;--accent:#8DB3C4;--accent-ink:#10191D;--err:#E08A7C}}
+:root[data-theme="dark"]{--bg:#16181A;--panel:#1D2022;--ink:#ECECE8;--mute:#9A9F9E;--line:#2D3134;--accent:#8DB3C4;--accent-ink:#10191D;--err:#E08A7C}
+*{box-sizing:border-box}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:16px/1.5 var(--font)}
+button,input,textarea,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.app{display:flex;height:100%}
+.side{width:220px;flex:none;border-right:1px solid var(--line);padding:24px 14px;display:flex;flex-direction:column;gap:4px;background:var(--bg);overflow-y:auto}
+.brand{font-weight:600;font-size:1.05rem;padding:0 10px 18px}
+.nav{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:40px;padding:6px 10px;border:0;border-left:2px solid transparent;background:none;border-radius:4px;color:var(--mute);cursor:pointer;text-align:left}
+.nav:hover{color:var(--ink)}
+.nav[aria-current="page"]{color:var(--ink);border-left-color:var(--accent);background:var(--panel);font-weight:500}
+.nav .n{font-size:.85rem;font-variant-numeric:tabular-nums}
+.sep{height:1px;background:var(--line);margin:12px 10px}
+.small{font-size:.9rem}
+.main{flex:1;min-width:0;display:flex;flex-direction:column;position:relative}
+.top{display:none;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line)}
+.ibtn{min-width:44px;min-height:44px;border:1px solid var(--line);background:var(--panel);border-radius:8px;cursor:pointer}
+section{flex:1;min-height:0;display:flex;flex-direction:column}
+[hidden]{display:none!important}
+/* form */
+#v-new{overflow-y:auto;padding:6vh 24px 40px}
+.form{width:100%;max-width:640px;margin:0 auto}
+.date{color:var(--mute);font-size:.9rem;margin:0 0 6px}
+h1{font-size:1.5rem;font-weight:600;margin:0 0 18px;letter-spacing:-.01em}
+fieldset{border:0;padding:0;margin:0 0 16px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--panel)}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg label{padding:9px 18px;min-height:40px;cursor:pointer;color:var(--mute);border-right:1px solid var(--line)}
+.seg label:last-child{border-right:0}
+.seg input:checked+label{background:var(--accent);color:var(--accent-ink);font-weight:500}
+.seg input:focus-visible+label{outline:2px solid var(--accent);outline-offset:-3px}
+.field{display:block;margin-bottom:12px}
+.field span{display:block;font-size:.88rem;color:var(--mute);margin-bottom:4px}
+input[type=text],input[type=search],textarea,select{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
+textarea{min-height:240px;resize:vertical;line-height:1.6}
+.row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.btn{min-height:44px;padding:0 20px;border-radius:8px;border:1px solid var(--line);background:var(--panel);cursor:pointer}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:500}
+.btn:disabled{opacity:.5;cursor:default}
+.msg{min-height:1.4em;font-size:.92rem;color:var(--mute)}
+.msg.err{color:var(--err)}
+/* archive */
+#v-arc{padding:28px 24px 20px;min-height:0}
+.ah{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.ah h1{margin:0}
+.ah .count{color:var(--mute);font-size:.92rem}
+.tools{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.sw{position:relative;flex:1 1 220px;max-width:380px}
+.sw input{padding-right:70px}
+.sw button{position:absolute;right:4px;top:4px;bottom:4px;border:0;background:none;color:var(--mute);cursor:pointer;padding:0 10px}
+.tools select{width:auto}
+.stage{position:relative;flex:1;min-height:260px;overflow:hidden;touch-action:pan-y;outline-offset:-2px}
+.card{position:absolute;top:0;bottom:0;left:8%;width:84%;max-width:760px;margin:0 auto;right:0;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:28px 32px 20px;display:flex;flex-direction:column;transition:transform .28s ease,opacity .28s ease;cursor:pointer}
+.card.active{cursor:default}
+.card .hd{display:flex;align-items:center;gap:10px;color:var(--mute);font-size:.88rem;margin-bottom:16px}
+.cat{border:1px solid var(--line);border-radius:99px;padding:1px 10px;color:var(--ink)}
+.ttl{font-style:italic;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hd .sp{flex:1}
+.act{border:0;background:none;color:var(--mute);cursor:pointer;min-height:36px;padding:0 8px;border-radius:6px;text-decoration:underline;text-underline-offset:3px}
+.act:hover{color:var(--ink)}
+.body{flex:1;overflow-y:auto;font-size:1.4rem;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere;padding-right:4px}
+.ft{display:flex;justify-content:space-between;gap:10px;margin-top:16px;padding-top:12px;border-top:1px solid var(--line);color:var(--mute);font-size:.85rem}
+.hist{margin:12px 0 0;padding:10px 0 0 20px;border-top:1px solid var(--line);font-size:.85rem;color:var(--mute);max-height:30%;overflow-y:auto}
+.ctl{display:flex;justify-content:center;align-items:center;gap:18px;padding-top:14px}
+.ctl span{min-width:70px;text-align:center;font-variant-numeric:tabular-nums;color:var(--mute)}
+.empty{margin:auto;text-align:center;color:var(--mute);display:flex;flex-direction:column;gap:14px;align-items:center}
+dialog{border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--ink);padding:22px;width:min(560px,92vw)}
+dialog::backdrop{background:rgba(0,0,0,.35)}
+dialog h2{margin:0 0 8px;font-size:1.15rem}
+dialog textarea{min-height:150px;font:.82rem/1.4 ui-monospace,Menlo,monospace}
+.scrim{display:none}
+@media (max-width:800px){
+.top{display:flex}
+.side{position:fixed;z-index:20;top:0;bottom:0;left:0;transform:translateX(-102%);transition:transform .22s;background:var(--panel);padding-top:calc(24px + env(safe-area-inset-top,0px))}
+.side.open{transform:none}
+.scrim.open{display:block;position:fixed;inset:0;z-index:10;background:rgba(0,0,0,.35)}
+.card{left:6%;width:88%;padding:22px 20px 16px}
+.body{font-size:1.2rem}
+#v-new{padding-top:24px}
+#v-arc{padding:18px 14px 14px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="side" id="side" aria-label="Main navigation">
+  <div class="brand">Fleeting Notes</div>
+  <button class="nav" data-view="new">New Note</button>
+  <div class="sep"></div>
+  <button class="nav" data-view="all">All Notes <span class="n" id="c-all">0</span></button>
+  <button class="nav" data-view="film">Film <span class="n" id="c-film">0</span></button>
+  <button class="nav" data-view="book">Book <span class="n" id="c-book">0</span></button>
+  <button class="nav" data-view="random">Random <span class="n" id="c-random">0</span></button>
+  <div class="sep"></div>
+  <button class="nav small" id="b-export">Export</button>
+  <button class="nav small" id="b-import">Import</button>
+</aside>
+<div class="scrim" id="scrim"></div>
+<div class="main">
+  <div class="top"><button class="ibtn" id="menu" aria-label="Open menu">Menu</button><strong>Fleeting Notes</strong></div>
+
+  <section id="v-new">
+    <form class="form" id="form" novalidate>
+      <p class="date" id="today"></p>
+      <h1 id="fh">New note</h1>
+      <fieldset><legend class="field"><span>Category</span></legend>
+        <div class="seg" role="radiogroup">
+          <input type="radio" name="cat" id="r-film" value="film"><label for="r-film">Film</label>
+          <input type="radio" name="cat" id="r-book" value="book"><label for="r-book">Book</label>
+          <input type="radio" name="cat" id="r-random" value="random"><label for="r-random">Random</label>
+        </div>
+      </fieldset>
+      <label class="field" id="tw" hidden><span id="tl">Title</span><input type="text" id="title" autocomplete="off"></label>
+      <label class="field"><span>Note</span><textarea id="content" placeholder="What are you thinking?"></textarea></label>
+      <div class="row"><button class="btn pri" id="save" type="submit">Save note</button><button class="btn" id="cancel" type="button" hidden>Cancel</button><span class="msg" id="msg" role="status" aria-live="polite"></span></div>
+    </form>
+  </section>
+
+  <section id="v-arc" hidden>
+    <div class="ah"><h1 id="ah">All notes</h1><span class="count" id="ac"></span></div>
+    <div class="tools" id="tools">
+      <div class="sw"><input type="search" id="q" placeholder="Search notes and titles" aria-label="Search notes"><button id="qx" hidden aria-label="Clear search">Clear</button></div>
+      <select id="sort" aria-label="Sort order"><option value="desc">Newest first</option><option value="asc">Oldest first</option></select>
+    </div>
+    <div class="stage" id="stage" tabindex="0" aria-roledescription="carousel" aria-label="Note flashcards"><div id="track"></div></div>
+    <div class="ctl" id="ctl"><button class="btn" id="prev" aria-label="Previous note">Previous</button><span id="pos" aria-live="polite"></span><button class="btn" id="next" aria-label="Next note">Next</button></div>
+    <div class="empty" id="empty" hidden><p id="et"></p><button class="btn pri" id="en">New note</button></div>
+  </section>
+</div>
+</div>
+
+<dialog id="cd"><h2 id="cdt"></h2><p id="cdm"></p><div class="row" style="justify-content:flex-end"><button class="btn" id="cdn">Cancel</button><button class="btn pri" id="cdy">Delete</button></div></dialog>
+<dialog id="bk">
+  <h2>Backup and restore</h2>
+  <p class="msg">Notes live in this browser on this device only. Export a JSON file to back them up or move them.</p>
+  <label class="field"><span>Backup JSON</span><textarea id="json" spellcheck="false"></textarea></label>
+  <div class="row"><button class="btn" id="dl">Download file</button><button class="btn" id="cp">Copy</button><button class="btn" id="pick">Choose file</button><input type="file" id="file" accept=".json,application/json" hidden></div>
+  <fieldset style="margin-top:14px"><div class="row"><label><input type="radio" name="mode" value="merge" checked> Merge with current notes</label><label><input type="radio" name="mode" value="replace"> Replace all notes</label></div></fieldset>
+  <div class="row"><button class="btn pri" id="imp">Import</button><button class="btn" id="bkx">Close</button><span class="msg" id="bm" role="status"></span></div>
+</dialog>
+
+<script>
+'use strict';
+/* ---------- 1. Model & validation ---------- */
+const CATS=['film','book','random'], LABEL={film:'Film',book:'Book',random:'Random'};
+const $=(s,r=document)=>r.querySelector(s);
+function h(tag,props={},...kids){const e=document.createElement(tag);for(const[k,v]of Object.entries(props)){if(k==='class')e.className=v;else if(k.startsWith('on'))e.addEventListener(k.slice(2),v);else e.setAttribute(k,v)}e.append(...kids);return e}
+const fmt=iso=>new Date(iso).toLocaleString(undefined,{dateStyle:'medium',timeStyle:'short'});
+const Model={
+  uuid:()=>crypto.randomUUID?crypto.randomUUID():'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0;return(c==='x'?r:r&3|8).toString(16)}),
+  validate(d){const e=[];if(!CATS.includes(d.category))e.push('Choose a category.');else if(d.category!=='random'&&!(d.title||'').trim())e.push(`Add the ${d.category} title.`);if(!(d.content||'').trim())e.push('Write the note text.');return e},
+  make(d){const t=new Date().toISOString();return{id:Model.uuid(),category:d.category,title:d.category==='random'?'':d.title.trim(),content:d.content.trim(),createdAt:t,updatedAt:t,editHistory:[]}},
+  isNote(n){return !!n&&typeof n==='object'&&typeof n.id==='string'&&n.id.length>0&&CATS.includes(n.category)&&typeof n.content==='string'&&n.content.trim().length>0&&(n.category==='random'||(typeof n.title==='string'&&n.title.trim().length>0))&&!isNaN(Date.parse(n.createdAt))&&!isNaN(Date.parse(n.updatedAt))&&(n.editHistory===undefined||(Array.isArray(n.editHistory)&&n.editHistory.every(t=>!isNaN(Date.parse(t)))))},
+  history:n=>Array.isArray(n.editHistory)?n.editHistory:(n.updatedAt!==n.createdAt?[n.updatedAt]:[]),
+  sort(list,dir){const s=dir==='asc'?1:-1;return [...list].sort((a,b)=>s*((Date.parse(a.createdAt)-Date.parse(b.createdAt))||(a.id<b.id?-1:a.id>b.id?1:0)))}
+};
+
+/* ---------- 2. Storage layer (IndexedDB behind a repository) ---------- */
+const Repo=(()=>{
+  let dbp;
+  const open=()=>dbp||(dbp=new Promise((res,rej)=>{const r=indexedDB.open('fleeting-notes',1);r.onupgradeneeded=()=>r.result.createObjectStore('notes',{keyPath:'id'});r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}));
+  const run=async(mode,fn)=>{const db=await open();return new Promise((res,rej)=>{const t=db.transaction('notes',mode),s=t.objectStore('notes');let out;try{out=fn(s,t)}catch(e){try{t.abort()}catch{}return rej(e)}
+    t.oncomplete=()=>res(typeof out==='function'?out():out);t.onerror=()=>rej(t.error);t.onabort=()=>rej(t.error||new Error('Transaction aborted'))})};
+  return{
+    getAllNotes:()=>run('readonly',s=>{const r=s.getAll();return()=>r.result}),
+    getNoteById:id=>run('readonly',s=>{const r=s.get(id);return()=>r.result||null}),
+    createNote:note=>run('readwrite',s=>{s.add(note);return()=>note}),
+    updateNote:(id,ch)=>run('readwrite',(s,t)=>{let next;const g=s.get(id);g.onsuccess=()=>{const c=g.result;if(!c){t.abort();return}if(['category','title','content'].every(k=>(ch[k]??c[k])===c[k])){next=c;return}const t=new Date().toISOString();next={...c,...ch,id:c.id,createdAt:c.createdAt,updatedAt:t,editHistory:[...Model.history(c),t]};s.put(next)};return()=>next}),
+    deleteNote:id=>run('readwrite',s=>{s.delete(id)}),
+    async exportNotes(){const notes=Model.sort(await this.getAllNotes(),'asc');return{app:'fleeting-notes',version:1,exportedAt:new Date().toISOString(),notes}},
+    parseImport(text){let d;try{d=JSON.parse(text)}catch{throw new Error('This is not valid JSON.')}const arr=Array.isArray(d)?d:d&&d.notes;if(!Array.isArray(arr))throw new Error('No notes list found in this file.');
+      const bad=arr.filter(n=>!Model.isNote(n)).length;if(bad)throw new Error(`${bad} of ${arr.length} notes are invalid. Nothing was imported.`);
+      const m=new Map();arr.forEach(n=>m.set(n.id,{id:n.id,category:n.category,title:n.category==='random'?'':n.title.trim(),content:n.content,createdAt:n.createdAt,updatedAt:n.updatedAt,editHistory:Model.history(n)}));return[...m.values()]},
+    importNotes(notes,mode){return run('readwrite',s=>{if(mode==='replace'){s.clear();notes.forEach(n=>s.put(n))}else notes.forEach(n=>{const g=s.get(n.id);g.onsuccess=()=>{if(!g.result||Date.parse(n.updatedAt)>Date.parse(g.result.updatedAt))s.put(n)}});return()=>notes.length})}
+  };
+})();
+const Prefs={get(){try{return JSON.parse(localStorage.getItem('fn-prefs'))||{}}catch{return{}}},set(k,v){try{localStorage.setItem('fn-prefs',JSON.stringify({...Prefs.get(),[k]:v}))}catch{}}};
+
+/* ---------- 3. State, selectors, CRUD ---------- */
+const S={notes:[],view:'new',q:'',sort:Prefs.get().sort==='asc'?'asc':'desc',cur:null,editing:null,editBack:'all',formCat:null,busy:false};
+const list=()=>{const q=S.q.trim().toLowerCase();return Model.sort(S.notes.filter(n=>(S.view==='all'||n.category===S.view)&&(!q||n.content.toLowerCase().includes(q)||(n.title||'').toLowerCase().includes(q))),S.sort)};
+async function refresh(){S.notes=await Repo.getAllNotes();Car.reset();render()}
+
+/* ---------- 4. Confirm dialog ---------- */
+function confirmBox(title,msg,ok){return new Promise(res=>{const d=$('#cd');$('#cdt').textContent=title;$('#cdm').textContent=msg;$('#cdy').textContent=ok;const done=v=>{d.close();res(v)};$('#cdy').onclick=()=>done(true);$('#cdn').onclick=()=>done(false);d.oncancel=()=>res(false);d.showModal()})}
+
+/* ---------- 5. Form ---------- */
+const Form={
+  sync(){const c=S.formCat,tw=$('#tw');tw.hidden=!(c==='film'||c==='book');$('#tl').textContent=c==='book'?'Book title':'Film title';
+    if(c)$('#r-'+c).checked=true;
+    $('#fh').textContent=S.editing?'Edit note':'New note';$('#cancel').hidden=!S.editing;$('#save').textContent=S.editing?'Save changes':'Save note'},
+  msg(t,err){const m=$('#msg');m.textContent=t;m.classList.toggle('err',!!err)},
+  reset(){$('#title').value='';$('#content').value='';this.msg('')},
+  fill(n){S.formCat=n.category;$('#title').value=n.title||'';$('#content').value=n.content;this.msg('');this.sync()},
+  async submit(e){e.preventDefault();if(S.busy)return;
+    const d={category:S.formCat,title:$('#title').value,content:$('#content').value},errs=Model.validate(d);
+    if(errs.length){this.msg(errs.join(' '),true);return}
+    S.busy=true;$('#save').disabled=true;
+    try{
+      if(S.editing){const id=S.editing;await Repo.updateNote(id,{category:d.category,title:d.category==='random'?'':d.title.trim(),content:d.content.trim()});
+        S.editing=null;S.cur=id;S.view=S.editBack==='new'?'all':S.editBack;if(S.view!=='all'&&S.view!==d.category)S.view='all';this.reset()}
+      else{await Repo.createNote(Model.make(d));this.reset();this.msg('Saved.');setTimeout(()=>{if($('#msg').textContent==='Saved.')this.msg('')},2500);$(d.category==='random'?'#content':'#title').focus()}
+      await refresh();
+    }catch(err){this.msg('Could not save: '+(err&&err.message||'storage error')+'. Your text is still here.',true)}
+    finally{S.busy=false;$('#save').disabled=false}
+  }
+};
+
+/* ---------- 6. Carousel ---------- */
+const Car={cache:new Map(),L:[],i:0,prev:0,touch:null,
+  reset(){this.cache.clear();$('#track').replaceChildren();this.prev=this.i},
+  pos(el,o){el.style.transform=`translateX(${o*103}%) scale(${o?.94:1})`;el.style.opacity=o===0?1:Math.abs(o)===1?.45:0;el.classList.toggle('active',o===0);el.inert=o!==0;el.setAttribute('aria-hidden',o!==0)},
+  card(n){
+    const eh=Model.history(n),hist=h('ol',{class:'hist',hidden:''},h('li',{},'Created '+fmt(n.createdAt)),...eh.map((t,i)=>h('li',{},`Edit ${i+1}: ${fmt(t)}`))),
+      tg=eh.length?h('button',{class:'act','aria-expanded':'false',onclick:()=>{hist.hidden=!hist.hidden;tg.setAttribute('aria-expanded',String(!hist.hidden))}},`Edited ${eh.length} ${eh.length===1?'time':'times'}`):'',
+      el=h('article',{class:'card'}),pos=h('span');el._pos=pos;el._id=n.id;
+    el.append(h('div',{class:'hd'},h('span',{class:'cat'},LABEL[n.category]),n.title?h('span',{class:'ttl'},n.title):h('span',{class:'sp'}),
+        h('button',{class:'act','aria-label':'Edit note',onclick:()=>App.edit(n)},'Edit'),h('button',{class:'act','aria-label':'Delete note',onclick:()=>App.del(n)},'Delete')),
+      h('div',{class:'body',tabindex:'0'},n.content),hist,h('div',{class:'ft'},h('span',{},'Created '+fmt(n.createdAt)),tg,pos));
+    return el},
+  draw(){const{L,i}=this,tr=$('#track'),want=new Set();
+    for(let k=i-1;k<=i+1;k++){const n=L[k];if(!n)continue;want.add(n.id);let el=this.cache.get(n.id);
+      if(!el){el=this.card(n);this.cache.set(n.id,el);this.pos(el,k-this.prev);tr.append(el);void el.offsetWidth}
+      el._pos.textContent=`${k+1} / ${L.length}`;this.pos(el,k-i)}
+    for(const[id,el]of this.cache)if(!want.has(id)){this.cache.delete(id);this.pos(el,(L.findIndex(x=>x.id===id)<i)?-2:2);setTimeout(()=>el.remove(),300)}
+    this.prev=i;S.cur=L[i]?L[i].id:null;
+    $('#pos').textContent=L.length?`${i+1} / ${L.length}`:'';$('#prev').disabled=i<=0;$('#next').disabled=i>=L.length-1},
+  go(d){const j=Math.min(Math.max(this.i+d,0),this.L.length-1);if(j!==this.i){this.i=j;this.draw()}},
+  init(){const st=$('#stage');
+    $('#prev').onclick=()=>this.go(-1);$('#next').onclick=()=>this.go(1);
+    st.addEventListener('keydown',e=>{if(e.target.closest('button'))return;if(e.key==='ArrowLeft'){e.preventDefault();this.go(-1)}else if(e.key==='ArrowRight'){e.preventDefault();this.go(1)}});
+    st.addEventListener('click',e=>{if(e.target.closest('button,a,input,select'))return;if(String(getSelection()).length)return;
+      const c=e.target.closest('.card');if(!c)return;const id=c._id,k=this.L.findIndex(x=>x.id===id);if(k===this.i){const r=c.getBoundingClientRect();this.go(e.clientX<r.left+r.width/2?-1:1)}else this.go(k<this.i?-1:1)});
+    st.addEventListener('touchstart',e=>{const t=e.touches[0];this.touch=[t.clientX,t.clientY]},{passive:true});
+    st.addEventListener('touchend',e=>{if(!this.touch)return;const t=e.changedTouches[0],dx=t.clientX-this.touch[0],dy=t.clientY-this.touch[1];this.touch=null;
+      if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)*1.5){this.go(dx<0?1:-1);this.swiped=true;setTimeout(()=>this.swiped=false,350)}},{passive:true});
+    st.addEventListener('click',e=>{if(this.swiped)e.stopImmediatePropagation()},true)}
+};
+
+/* ---------- 7. Rendering & navigation ---------- */
+function render(){
+  const arc=S.view!=='new';
+  $('#v-new').hidden=arc;$('#v-arc').hidden=!arc;
+  document.querySelectorAll('.nav[data-view]').forEach(b=>{const on=b.dataset.view===S.view&&!S.editing||(S.editing&&b.dataset.view==='new'&&S.view==='new');if(on)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
+  const cnt={all:S.notes.length,film:0,book:0,random:0};S.notes.forEach(n=>cnt[n.category]++);
+  for(const k in cnt)$('#c-'+k).textContent=cnt[k];
+  if(!arc){Form.sync();$('#today').textContent=new Date().toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long',year:'numeric'});return}
+  const L=list();Car.L=L;const idx=L.findIndex(n=>n.id===S.cur);Car.i=idx<0?0:idx;
+  $('#ah').textContent=S.view==='all'?'All notes':LABEL[S.view];
+  $('#ac').textContent=`${L.length} ${L.length===1?'note':'notes'}${S.q.trim()?' found':''}`;
+  $('#qx').hidden=!S.q;$('#sort').value=S.sort;
+  const none=L.length===0,total=S.notes.length===0;
+  $('#stage').hidden=none;$('#ctl').hidden=none;$('#empty').hidden=!none;$('#tools').hidden=total;
+  if(none){$('#et').textContent=total?'No notes yet. Capture your first thought.':S.q.trim()?'No notes match your search.':`No ${LABEL[S.view]||''} notes yet.`;$('#en').hidden=!!S.q.trim()&&!total;Car.reset();S.cur=null;return}
+  Car.draw()
+}
+const App={
+  go(v){S.view=v;S.editing=null;if(v==='new'){Form.reset();S.q=S.q}else{S.cur=null;Car.reset()}render();closeDrawer();if(v!=='new')$('#q').value=S.q},
+  edit(n){S.editBack=S.view;S.editing=n.id;S.view='new';Form.fill(n);render();$('#content').focus()},
+  async del(n){if(!await confirmBox('Delete this note?','This removes the note permanently. This cannot be undone.','Delete'))return;
+    try{const L=Car.L,k=L.findIndex(x=>x.id===n.id);S.cur=(L[k+1]||L[k-1]||{}).id||null;await Repo.deleteNote(n.id);await refresh()}catch(e){alert('Could not delete: '+(e.message||'storage error'))}}
+};
+function closeDrawer(){$('#side').classList.remove('open');$('#scrim').classList.remove('open')}
+
+/* ---------- 8. Export / import ---------- */
+const Backup={
+  async open(exp){const d=$('#bk');$('#bm').textContent='';try{$('#json').value=exp?JSON.stringify(await Repo.exportNotes(),null,2):''}catch(e){$('#bm').textContent='Could not read notes: '+e.message}closeDrawer();d.showModal()},
+  async download(){const m=$('#bm');try{const text=JSON.stringify(await Repo.exportNotes(),null,2);$('#json').value=text;
+    const dl=window.claude&&await claude.use('downloads');if(!dl){const u=URL.createObjectURL(new Blob([text],{type:'application/json'})),a=h('a',{href:u,download:`fleeting-notes-${new Date().toISOString().slice(0,10)}.json`});document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1000);m.textContent='Backup downloaded.';return}
+    await dl.save({filename:`fleeting-notes-${new Date().toISOString().slice(0,10)}.json`,data:new Blob([text],{type:'application/json'})});m.textContent='Backup ready.'}
+    catch(e){m.textContent=e&&e.code==='declined'?'Download cancelled.':'Could not download: '+((e&&e.message)||'error')+'. Use Copy instead.'}},
+  async copy(){try{await navigator.clipboard.writeText($('#json').value);$('#bm').textContent='Copied.'}catch{$('#json').select();$('#bm').textContent='Select the text and copy it manually.'}},
+  async run(){const m=$('#bm');try{const notes=Repo.parseImport($('#json').value),mode=document.querySelector('[name=mode]:checked').value;
+    if(!notes.length){m.textContent='The file has no notes.';return}
+    const ok=await confirmBox(mode==='replace'?'Replace all notes?':'Merge notes?',mode==='replace'?`Your ${S.notes.length} current notes will be replaced by ${notes.length} imported notes.`:`${notes.length} notes will be merged. Matching IDs keep the version edited last.`,mode==='replace'?'Replace':'Merge');
+    if(!ok)return;await Repo.importNotes(notes,mode);await refresh();m.textContent=`Imported ${notes.length} notes.`}catch(e){m.textContent=e.message||'Import failed. Your notes are unchanged.'}}
+};
+
+/* ---------- 9. Wiring ---------- */
+function wire(){
+  document.querySelectorAll('.nav[data-view]').forEach(b=>b.onclick=()=>App.go(b.dataset.view));
+  $('#b-export').onclick=()=>Backup.open(true);$('#b-import').onclick=()=>Backup.open(false);
+  $('#menu').onclick=()=>{$('#side').classList.add('open');$('#scrim').classList.add('open')};$('#scrim').onclick=closeDrawer;
+  document.querySelectorAll('[name=cat]').forEach(r=>r.onchange=()=>{S.formCat=r.value;Form.sync();Form.msg('');if(r.value!=='random')$('#title').focus()});
+  $('#form').onsubmit=e=>Form.submit(e);
+  $('#content').addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter')Form.submit(e)});
+  $('#cancel').onclick=()=>{S.editing=null;S.view=S.editBack;Form.reset();render()};
+  $('#en').onclick=()=>App.go('new');
+  $('#q').oninput=e=>{S.q=e.target.value;S.cur=S.cur;Car.reset();render()};
+  $('#qx').onclick=()=>{S.q='';$('#q').value='';Car.reset();render();$('#q').focus()};
+  $('#sort').onchange=e=>{S.sort=e.target.value;Prefs.set('sort',S.sort);Car.reset();render()};
+  $('#dl').onclick=()=>Backup.download();$('#cp').onclick=()=>Backup.copy();$('#imp').onclick=()=>Backup.run();$('#bkx').onclick=()=>$('#bk').close();
+  $('#pick').onclick=()=>$('#file').click();
+  $('#file').onchange=async e=>{const f=e.target.files[0];if(f){$('#json').value=await f.text();$('#bm').textContent=`Loaded ${f.name}. Choose merge or replace, then Import.`}e.target.value=''};
+  Car.init();
+}
+if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
+(async()=>{wire();$('#sort').value=S.sort;render();
+  try{await refresh()}catch(e){Form.msg('Storage is unavailable in this browser: '+(e.message||'unknown error')+'. Notes cannot be saved.',true);$('#save').disabled=true}})();
+</script>
+</body>
+</html>
