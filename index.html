@@ -34,7 +34,7 @@ button,input,textarea,select{font:inherit;color:inherit}
 .ibtn{min-width:44px;min-height:44px;border:1px solid var(--line);background:var(--panel);border-radius:8px;cursor:pointer}
 section{flex:1;min-height:0;display:flex;flex-direction:column}
 [hidden]{display:none!important}
-/* form */
+
 #v-new{overflow-y:auto;padding:6vh 24px 40px}
 .form{width:100%;max-width:640px;margin:0 auto}
 .date{color:var(--mute);font-size:.9rem;margin:0 0 6px}
@@ -56,7 +56,7 @@ textarea{min-height:240px;resize:vertical;line-height:1.6}
 .btn:disabled{opacity:.5;cursor:default}
 .msg{min-height:1.4em;font-size:.92rem;color:var(--mute)}
 .msg.err{color:var(--err)}
-/* archive */
+
 #v-arc{padding:28px 24px 20px;min-height:0}
 .ah{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:12px}
 .ah h1{margin:0}
@@ -159,7 +159,7 @@ dialog textarea{min-height:150px;font:.82rem/1.4 ui-monospace,Menlo,monospace}
 
 <script>
 'use strict';
-/* ---------- 1. Model & validation ---------- */
+
 const CATS=['film','book','random'], LABEL={film:'Film',book:'Book',random:'Random'};
 const $=(s,r=document)=>r.querySelector(s);
 function h(tag,props={},...kids){const e=document.createElement(tag);for(const[k,v]of Object.entries(props)){if(k==='class')e.className=v;else if(k.startsWith('on'))e.addEventListener(k.slice(2),v);else e.setAttribute(k,v)}e.append(...kids);return e}
@@ -173,7 +173,6 @@ const Model={
   sort(list,dir){const s=dir==='asc'?1:-1;return [...list].sort((a,b)=>s*((Date.parse(a.createdAt)-Date.parse(b.createdAt))||(a.id<b.id?-1:a.id>b.id?1:0)))}
 };
 
-/* ---------- 2. Storage layer (IndexedDB behind a repository) ---------- */
 const Repo=(()=>{
   let dbp;
   const open=()=>dbp||(dbp=new Promise((res,rej)=>{const r=indexedDB.open('fleeting-notes',1);r.onupgradeneeded=()=>r.result.createObjectStore('notes',{keyPath:'id'});r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}));
@@ -194,15 +193,15 @@ const Repo=(()=>{
 })();
 const Prefs={get(){try{return JSON.parse(localStorage.getItem('fn-prefs'))||{}}catch{return{}}},set(k,v){try{localStorage.setItem('fn-prefs',JSON.stringify({...Prefs.get(),[k]:v}))}catch{}}};
 
-/* ---------- 3. State, selectors, CRUD ---------- */
+
 const S={notes:[],view:'new',q:'',sort:Prefs.get().sort==='asc'?'asc':'desc',cur:null,editing:null,editBack:'all',formCat:null,busy:false};
 const list=()=>{const q=S.q.trim().toLowerCase();return Model.sort(S.notes.filter(n=>(S.view==='all'||n.category===S.view)&&(!q||n.content.toLowerCase().includes(q)||(n.title||'').toLowerCase().includes(q))),S.sort)};
 async function refresh(){S.notes=await Repo.getAllNotes();Car.reset();render()}
 
-/* ---------- 4. Confirm dialog ---------- */
+
 function confirmBox(title,msg,ok){return new Promise(res=>{const d=$('#cd');$('#cdt').textContent=title;$('#cdm').textContent=msg;$('#cdy').textContent=ok;const done=v=>{d.close();res(v)};$('#cdy').onclick=()=>done(true);$('#cdn').onclick=()=>done(false);d.oncancel=()=>res(false);d.showModal()})}
 
-/* ---------- 5. Form ---------- */
+
 const Form={
   sync(){const c=S.formCat,tw=$('#tw');tw.hidden=!(c==='film'||c==='book');$('#tl').textContent=c==='book'?'Book title':'Film title';
     if(c)$('#r-'+c).checked=true;
@@ -224,7 +223,7 @@ const Form={
   }
 };
 
-/* ---------- 6. Carousel ---------- */
+
 const Car={cache:new Map(),L:[],i:0,prev:0,touch:null,
   reset(){this.cache.clear();$('#track').replaceChildren();this.prev=this.i},
   pos(el,o){el.style.transform=`translateX(${o*103}%) scale(${o?.94:1})`;el.style.opacity=o===0?1:Math.abs(o)===1?.45:0;el.classList.toggle('active',o===0);el.inert=o!==0;el.setAttribute('aria-hidden',o!==0)},
@@ -255,7 +254,7 @@ const Car={cache:new Map(),L:[],i:0,prev:0,touch:null,
     st.addEventListener('click',e=>{if(this.swiped)e.stopImmediatePropagation()},true)}
 };
 
-/* ---------- 7. Rendering & navigation ---------- */
+
 function render(){
   const arc=S.view!=='new';
   $('#v-new').hidden=arc;$('#v-arc').hidden=!arc;
@@ -280,7 +279,7 @@ const App={
 };
 function closeDrawer(){$('#side').classList.remove('open');$('#scrim').classList.remove('open')}
 
-/* ---------- 8. Export / import ---------- */
+
 const Backup={
   async open(exp){const d=$('#bk');$('#bm').textContent='';try{$('#json').value=exp?JSON.stringify(await Repo.exportNotes(),null,2):''}catch(e){$('#bm').textContent='Could not read notes: '+e.message}closeDrawer();d.showModal()},
   async download(){const m=$('#bm');try{const text=JSON.stringify(await Repo.exportNotes(),null,2);$('#json').value=text;
@@ -294,7 +293,7 @@ const Backup={
     if(!ok)return;await Repo.importNotes(notes,mode);await refresh();m.textContent=`Imported ${notes.length} notes.`}catch(e){m.textContent=e.message||'Import failed. Your notes are unchanged.'}}
 };
 
-/* ---------- 9. Wiring ---------- */
+
 function wire(){
   document.querySelectorAll('.nav[data-view]').forEach(b=>b.onclick=()=>App.go(b.dataset.view));
   $('#b-export').onclick=()=>Backup.open(true);$('#b-import').onclick=()=>Backup.open(false);
